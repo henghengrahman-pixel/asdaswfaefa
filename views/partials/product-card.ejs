@@ -1,0 +1,12 @@
+<article class="product-card">
+  <a class="product-image" href="/produk/<%= p.slug %>" aria-label="Lihat <%= p.name %>">
+    <% if(p.isFeatured){ %><span class="badge">Viral</span><% } %>
+    <img src="<%= (p.images && p.images[0]) || '/assets/img/og-default.svg' %>" alt="<%= p.name %>" loading="lazy" onerror="this.onerror=null;this.src='/assets/img/og-default.svg'">
+  </a>
+  <div class="product-body">
+    <a class="product-title" href="/produk/<%= p.slug %>"><%= p.name %></a>
+    <div class="product-price"><strong><%= money(p.price) %></strong><% if(Number(p.oldPrice)>Number(p.price)){ %><del><%= money(p.oldPrice) %></del><% } %></div>
+    <div class="meta">⭐ <%= p.rating %> · Terjual <%= p.soldLabel %></div>
+    <a class="btn btn-soft" href="/produk/<%= p.slug %>">Lihat Produk</a>
+  </div>
+</article>

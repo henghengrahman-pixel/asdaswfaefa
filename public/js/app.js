@@ -1,0 +1,2 @@
+document.querySelectorAll('[data-thumb]').forEach(btn=>btn.addEventListener('click',()=>{const main=document.querySelector('#mainProductImage');if(main)main.src=btn.dataset.thumb}));
+document.querySelectorAll('.share-btn').forEach(btn=>btn.addEventListener('click',async()=>{const data={title:btn.dataset.title,text:btn.dataset.title,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(location.href);btn.textContent='Link disalin'}}catch(_){}}));
