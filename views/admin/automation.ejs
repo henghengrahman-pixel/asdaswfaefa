@@ -1,0 +1,45 @@
+<%- include('partials/top',{title:'Auto Affiliate'}) %>
+<section class="stats">
+  <div><small>Status API Bot</small><strong class="bot-status <%= botKeyReady?'ok':'bad' %>"><%= botKeyReady?'SIAP':'BELUM' %></strong></div>
+  <div><small>Produk dari Bot</small><strong><%= db.products.filter(x=>x.source==='shopee-bot').length %></strong></div>
+  <div><small>Total Upsert</small><strong><%= db.bot?.totalUpserts||0 %></strong></div>
+  <div><small>Error Bot</small><strong><%= db.bot?.totalErrors||0 %></strong></div>
+</section>
+<section class="panel narrow">
+  <h2>Koneksi Bot Shopee</h2>
+  <p class="help">Bot Chrome/Playwright mengirim produk ke endpoint ini setelah mendapatkan link affiliate resmi dari akun Anda.</p>
+  <label class="api-field">Endpoint Upsert<input readonly value="<%= endpoint %>" onclick="this.select()"></label>
+  <div class="integration-grid">
+    <div><small>Environment Variable</small><code>BOT_API_KEY</code></div>
+    <div><small>Header Bot</small><code>X-Bot-Key: &lt;BOT_API_KEY&gt;</code></div>
+  </div>
+  <% if(!botKeyReady){ %><div class="alert danger">Tambahkan <b>BOT_API_KEY</b> di Railway Variables lalu redeploy. Jangan simpan key di source code.</div><% } %>
+  <div class="row"><span>Terakhir bot terhubung</span><b><%= db.bot?.lastSeenAt?new Date(db.bot.lastSeenAt).toLocaleString('id-ID'):'Belum pernah' %></b></div>
+  <div class="row"><span>Import terakhir</span><b><%= db.bot?.lastImportAt?new Date(db.bot.lastImportAt).toLocaleString('id-ID'):'Belum pernah' %></b></div>
+</section>
+<form class="panel narrow stack" method="post" action="/admin/automation">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <h2>Template Caption Otomatis</h2>
+  <p class="help">Placeholder yang didukung worker: {NAMA_PRODUK}, {HARGA}, {RATING}, {TERJUAL}, {DISKON}, {LINK_AFFILIATE}.</p>
+  <label>Caption<textarea name="botCaptionTemplate" rows="13"><%= db.settings.botCaptionTemplate %></textarea></label>
+  <button class="primary" type="submit">Simpan Template</button>
+</form>
+<section class="panel narrow">
+  <h2>Format Data Bot</h2>
+  <pre class="codebox">{
+  "sourceProductId": "ID_UNIK_SHOPEE",
+  "sourceUrl": "https://shopee.co.id/...",
+  "name": "Nama Produk",
+  "price": 99000,
+  "oldPrice": 129000,
+  "affiliateUrl": "https://s.shopee.co.id/...",
+  "images": ["https://...jpg"],
+  "rating": 4.9,
+  "soldLabel": "1RB+",
+  "category": "elektronik",
+  "caption": "caption hasil bot",
+  "isFeatured": true,
+  "isActive": true
+}</pre>
+</section>
+<%- include('partials/bottom') %>
