@@ -1,0 +1,40 @@
+<%- include('partials/top',{title:'Short Link Manager'}) %>
+<section class="sl-heading">
+  <div><h2>🔗 Short Link Manager</h2><p>Kelola tautan pendek untuk domain <strong><%= domain.replace(/^https?:\/\//, '') %></strong>.</p></div>
+  <button class="primary" type="button" id="sl-create">+ Buat Short Link</button>
+</section>
+<section class="sl-stats" aria-label="Statistik short link">
+  <div><span class="sl-stat-icon">🔗</span><strong><%= links.length.toLocaleString('id-ID') %></strong><small>Total Short Link</small></div>
+  <div><span class="sl-stat-icon green">✓</span><strong><%= links.filter(x=>x.isActive).length.toLocaleString('id-ID') %></strong><small>Aktif</small></div>
+  <div><span class="sl-stat-icon red">×</span><strong><%= links.filter(x=>!x.isActive).length.toLocaleString('id-ID') %></strong><small>Nonaktif</small></div>
+  <div><span class="sl-stat-icon blue">↗</span><strong><%= links.reduce((total,x)=>total+(Number(x.clicks)||0),0).toLocaleString('id-ID') %></strong><small>Total Klik</small></div>
+</section>
+<section class="panel sl-list">
+  <div class="sl-toolbar"><h2>Daftar Short Link</h2><label class="sl-search"><span aria-hidden="true">⌕</span><input id="sl-search" type="search" placeholder="Cari nama link atau tujuan..." aria-label="Cari short link"></label></div>
+  <div class="table-wrap"><table class="sl-table"><thead><tr><th>No</th><th>Short Link</th><th>URL Tujuan</th><th>Status</th><th>Total Klik</th><th>Terakhir Diklik</th><th>Aksi</th></tr></thead><tbody id="sl-body">
+    <% links.forEach((l,index)=>{ %>
+    <tr class="sl-row" data-search="<%= (l.code+' '+l.destination).toLowerCase() %>">
+      <td><%= index+1 %></td>
+      <td><div class="sl-link-cell"><a href="/<%= encodeURIComponent(l.code) %>" target="_blank" rel="noopener noreferrer"><%= domain.replace(/^https?:\/\//,'') %>/<%= l.code %></a><button type="button" class="sl-icon-btn" data-copy="<%= domain %>/<%= l.code %>" title="Salin link" aria-label="Salin <%= l.code %>">▣</button></div></td>
+      <td class="sl-dest"><a href="<%= l.destination %>" target="_blank" rel="noopener noreferrer" title="<%= l.destination %>"><%= l.destination %> ↗</a></td>
+      <td><span class="sl-status <%= l.isActive?'active':'inactive' %>"><%= l.isActive?'Aktif':'Nonaktif' %></span></td>
+      <td><%= (Number(l.clicks)||0).toLocaleString('id-ID') %></td>
+      <td><%= l.lastClickedAt?new Date(l.lastClickedAt).toLocaleString('id-ID'):'—' %></td>
+      <td><div class="sl-actions"><button type="button" class="sl-icon-btn edit" data-edit="<%= l.id %>" aria-label="Edit <%= l.code %>" title="Edit">✎</button><button type="button" class="sl-icon-btn" data-copy="<%= domain %>/<%= l.code %>" aria-label="Salin <%= l.code %>" title="Salin">▣</button><form action="/admin/shortlinks/<%= encodeURIComponent(l.id) %>/delete" method="post" onsubmit="return confirm('Hapus short link /<%= l.code %>? URL tersebut tidak dapat diakses lagi.')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button type="submit" class="sl-icon-btn delete" aria-label="Hapus <%= l.code %>" title="Hapus">♜</button></form></div></td>
+    </tr>
+    <% }) %>
+  </tbody></table></div>
+  <p id="sl-empty" class="sl-empty" <%= links.length?'hidden':'' %>>Belum ada short link. Klik “Buat Short Link” untuk membuat yang pertama.</p>
+  <div class="sl-footer"><span id="sl-count">Menampilkan <%= links.length?1:0 %>–<%= Math.min(10,links.length) %> dari <%= links.length %> data</span><div class="sl-pagination"><button type="button" id="sl-prev" aria-label="Halaman sebelumnya">‹</button><span id="sl-page">1</span><button type="button" id="sl-next" aria-label="Halaman berikutnya">›</button></div></div>
+</section>
+<dialog id="sl-dialog" class="sl-dialog" aria-labelledby="sl-dialog-title"><form method="post" action="/admin/shortlinks/save" class="sl-form">
+  <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="id" id="sl-id">
+  <div class="sl-modal-heading"><h2 id="sl-dialog-title">Buat Short Link</h2><button type="button" id="sl-close" aria-label="Tutup">×</button></div>
+  <label>Nama Short Link <div class="sl-input-prefix"><span><%= domain.replace(/^https?:\/\//,'') %>/</span><input id="sl-code" name="code" required minlength="2" maxlength="60" pattern="[a-zA-Z0-9][a-zA-Z0-9_-]{1,59}" placeholder="promo-november" autocomplete="off"></div><small>2–60 karakter: huruf, angka, tanda - atau _</small></label>
+  <label>URL Tujuan <input id="sl-destination" name="destination" type="url" required maxlength="2048" placeholder="https://s.shopee.co.id/..."></label>
+  <label class="sl-check"><input id="sl-active" type="checkbox" name="isActive" checked> Short link aktif</label>
+  <div class="sl-modal-actions"><button id="sl-cancel" type="button">Batal</button><button type="submit" class="primary">Simpan Short Link</button></div>
+</form></dialog>
+<script type="application/json" id="sl-data"><%- JSON.stringify(links.map(x=>({id:x.id,code:x.code,destination:x.destination,isActive:x.isActive}))).replace(/</g,'\\u003c') %></script>
+<script src="/assets/js/shortlinks-admin.js" defer></script>
+<%- include('partials/bottom') %>
